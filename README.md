@@ -355,14 +355,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Playwright**: For reliable E2E testing
 - **Lighthouse**: For performance auditing
 
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/gridsweep/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/gridsweep/issues)
-- **Documentation**: [Project Wiki](https://github.com/yourusername/gridsweep/wiki)
-
 ---
 
 **Built with ❤️ using Next.js, React, and TypeScript**
-
-_This project demonstrates enterprise-grade frontend development practices suitable for FAANG-level engineering teams._
