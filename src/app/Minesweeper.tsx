@@ -434,17 +434,17 @@ export default function GridSweepApp() {
 
   const face = (
     <div
-      className="relative h-11 w-11 select-none"
+      className="relative h-16 w-16 select-none cursor-pointer"
       role="button"
       aria-label="New game"
       onClick={restartSame}
       title="New game"
     >
-      <div className="h-full w-full rounded-full border border-black/20 bg-yellow-300 shadow-sm" />
+      <div className="h-full w-full rounded-3xl border-2 border-white/30 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 shadow-2xl transition-all duration-200 transform hover:scale-110 hover:shadow-3xl" />
       {/* eyes & mouth (simple SVG overlay) */}
       <svg className="absolute inset-0" viewBox="0 0 48 48">
         {mood === 'dead' ? (
-          <g stroke="#222" strokeWidth={3}>
+          <g stroke="#fff" strokeWidth={3} fill="#fff">
             <line x1="14" y1="16" x2="20" y2="22" />
             <line x1="20" y1="16" x2="14" y2="22" />
             <line x1="28" y1="16" x2="34" y2="22" />
@@ -452,27 +452,27 @@ export default function GridSweepApp() {
             <path d="M15 32 q9 8 18 0" fill="none" />
           </g>
         ) : mood === 'cool' ? (
-          <g fill="#222">
+          <g fill="#fff">
             <rect x="10" y="14" width="12" height="6" rx="2" />
             <rect x="26" y="14" width="12" height="6" rx="2" />
             <rect x="22" y="18" width="4" height="4" />
             <path
               d="M15 32 q9 8 18 0"
-              stroke="#222"
+              stroke="#fff"
               strokeWidth={3}
               fill="none"
             />
           </g>
         ) : mood === 'wow' ? (
-          <g stroke="#222" strokeWidth={3}>
-            <circle cx="16" cy="17" r="2" fill="#222" />
-            <circle cx="32" cy="17" r="2" fill="#222" />
+          <g stroke="#fff" strokeWidth={3} fill="#fff">
+            <circle cx="16" cy="17" r="2" fill="#fff" />
+            <circle cx="32" cy="17" r="2" fill="#fff" />
             <circle cx="24" cy="30" r="4" fill="none" />
           </g>
         ) : (
-          <g stroke="#222" strokeWidth={3}>
-            <circle cx="16" cy="17" r="2" fill="#222" />
-            <circle cx="32" cy="17" r="2" fill="#222" />
+          <g stroke="#fff" strokeWidth={3} fill="#fff">
+            <circle cx="16" cy="17" r="2" fill="#fff" />
+            <circle cx="32" cy="17" r="2" fill="#fff" />
             <path d="M15 32 q9 8 18 0" fill="none" />
           </g>
         )}
@@ -504,7 +504,7 @@ export default function GridSweepApp() {
     };
 
     const base =
-      'relative flex items-center justify-center select-none rounded-xl border transition-colors';
+      'relative flex items-center justify-center select-none rounded-2xl border transition-all duration-200 transform hover:scale-105';
 
     // unrevealed
     if (!cell.revealed) {
@@ -516,14 +516,14 @@ export default function GridSweepApp() {
           onDoubleClick={onDouble}
           className={
             base +
-            ` h-10 w-10 bg-slate-200/60 dark:bg-slate-700/60 border-slate-300/70 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600 focus:outline-none` +
-            (focused ? ' ring-1 ring-indigo-500/50' : '')
+            ` h-12 w-12 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border-slate-300/70 dark:border-slate-600 hover:from-slate-200 hover:to-slate-300 dark:hover:from-slate-600 dark:hover:to-slate-700 focus:outline-none shadow-lg hover:shadow-xl` +
+            (focused ? ' ring-2 ring-emerald-500/70 shadow-2xl' : '')
           }
           data-testid={`cell-${r}-${c}`}
         >
           {cell.flagged ? (
             <Flag
-              className="h-5 w-5 text-rose-500 drop-shadow"
+              className="h-6 w-6 text-rose-500 drop-shadow-lg"
               strokeWidth={2.5}
             />
           ) : (
@@ -541,11 +541,11 @@ export default function GridSweepApp() {
         transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.6 }}
         className={
           base +
-          ' h-10 w-10 bg-white/90 dark:bg-slate-800/90 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100'
+          ' h-12 w-12 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 shadow-inner'
         }
       >
         {cell.mine ? (
-          <Bomb className="h-5 w-5 text-slate-900 dark:text-slate-100" />
+          <Bomb className="h-6 w-6 text-slate-900 dark:text-slate-100" />
         ) : cell.adj > 0 ? (
           <motion.span
             key={
@@ -562,14 +562,14 @@ export default function GridSweepApp() {
               ease: 'easeOut',
             }}
             className={
-              'font-bold text-[16px] leading-none ' +
+              'font-bold text-[18px] leading-none ' +
               {
                 1: 'text-blue-600 dark:text-blue-400',
                 2: 'text-emerald-600 dark:text-emerald-400',
                 3: 'text-rose-600 dark:text-rose-400',
                 4: 'text-violet-600 dark:text-violet-400',
-                5: 'text-red-700 dark:text-red-400',
-                6: 'text-cyan-600 dark:text-cyan-300',
+                5: 'text-orange-600 dark:text-orange-400',
+                6: 'text-cyan-600 dark:text-cyan-400',
                 7: 'text-slate-700 dark:text-slate-300',
                 8: 'text-slate-500 dark:text-slate-400',
               }[cell.adj as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8]
@@ -608,12 +608,12 @@ export default function GridSweepApp() {
           initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 16, opacity: 0 }}
-          className="relative w-full max-w-md rounded-2xl border border-white/10 bg-white/80 p-4 backdrop-blur-md dark:bg-slate-900/80 dark:border-slate-700 shadow-xl"
+          className="relative w-full max-w-md rounded-3xl border border-white/20 bg-white/90 p-6 backdrop-blur-xl dark:bg-slate-900/90 dark:border-slate-600 shadow-2xl"
           data-testid="settings-dialog"
         >
-          <div className="flex items-center justify-between pb-2">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              New Game Settings
+          <div className="flex items-center justify-between pb-4">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              🎮 New Game Settings
             </h3>
             <button
               className="rounded-lg p-2 text-slate-600 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-700"
@@ -623,14 +623,14 @@ export default function GridSweepApp() {
               ✕
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             <label className="flex flex-col text-sm font-medium text-slate-700 dark:text-slate-300">
-              Rows
+              📏 Rows
               <input
                 type="number"
                 min={5}
                 max={50}
-                className="mt-1 rounded-lg border border-slate-300 bg-white/70 px-3 py-2 outline-none ring-indigo-500/30 focus:ring-2 dark:bg-slate-800/70 dark:border-slate-700"
+                className="mt-2 rounded-xl border border-slate-300 bg-white/80 px-4 py-3 outline-none ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50 dark:bg-slate-800/80 dark:border-slate-600 shadow-sm"
                 value={r}
                 onChange={e =>
                   setR(Math.max(5, Math.min(50, Number(e.target.value) || 0)))
@@ -638,12 +638,12 @@ export default function GridSweepApp() {
               />
             </label>
             <label className="flex flex-col text-sm font-medium text-slate-700 dark:text-slate-300">
-              Columns
+              📐 Columns
               <input
                 type="number"
                 min={5}
                 max={60}
-                className="mt-1 rounded-lg border border-slate-300 bg-white/70 px-3 py-2 outline-none ring-indigo-500/30 focus:ring-2 dark:bg-slate-800/70 dark:border-slate-700"
+                className="mt-2 rounded-xl border border-slate-300 bg-white/80 px-4 py-2 outline-none ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50 dark:bg-slate-800/80 dark:border-slate-600 shadow-sm"
                 value={c}
                 onChange={e =>
                   setC(Math.max(5, Math.min(60, Number(e.target.value) || 0)))
@@ -651,37 +651,37 @@ export default function GridSweepApp() {
               />
             </label>
             <label className="flex flex-col text-sm font-medium text-slate-700 dark:text-slate-300">
-              Mines (≤ 50%)
+              💣 Targets (≤ 50%)
               <input
                 type="number"
                 min={1}
                 max={cap}
-                className="mt-1 rounded-lg border border-slate-300 bg-white/70 px-3 py-2 outline-none ring-indigo-500/30 focus:ring-2 dark:bg-slate-800/70 dark:border-slate-700"
+                className="mt-2 rounded-xl border border-slate-300 bg-white/80 px-4 py-3 outline-none ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50 dark:bg-slate-800/80 dark:border-slate-600 shadow-sm"
                 value={m}
                 onChange={e =>
                   setM(clampMines(r, c, Number(e.target.value) || 0))
                 }
               />
-              <span className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <span className="mt-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
                 Max for {r}×{c} = {cap}
               </span>
             </label>
           </div>
-          <div className="mt-4 flex items-center justify-end gap-2">
+          <div className="mt-6 flex items-center justify-end gap-3">
             <button
-              className="rounded-xl px-4 py-2 text-slate-700 hover:bg-slate-200/80 dark:text-slate-200 dark:hover:bg-slate-700"
+              className="rounded-xl px-6 py-3 text-slate-700 hover:bg-slate-200/80 dark:text-slate-200 dark:hover:bg-slate-700 font-medium transition-colors"
               onClick={() => setSettingsOpen(false)}
             >
               Cancel
             </button>
             <button
-              className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white shadow hover:bg-indigo-500"
+              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 font-bold text-white shadow-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-105"
               onClick={() => {
                 resetWith(r, c, m);
                 setSettingsOpen(false);
               }}
             >
-              Apply
+              🚀 Apply
             </button>
           </div>
         </motion.div>
@@ -695,8 +695,8 @@ export default function GridSweepApp() {
       className={
         'min-h-screen w-full ' +
         (dark
-          ? 'dark bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950'
-          : 'bg-gradient-to-br from-slate-100 via-white to-indigo-100')
+          ? 'dark bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950'
+          : 'bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-100')
       }
     >
       <div className="mx-auto max-w-5xl px-6 py-8">
@@ -757,15 +757,20 @@ export default function GridSweepApp() {
         </div>
 
         {/* Grid Card */}
-        <div className="rounded-3xl border border-black/10 bg-white/60 p-4 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-slate-900/60">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="rounded-3xl border border-white/20 bg-white/80 p-8 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-900/80"
+        >
           <div
             ref={gridRef}
             tabIndex={0}
             onKeyDown={onKeyDown}
             onFocus={() => setFocusRC([2, 2])}
             onClick={() => gridRef.current?.focus()}
-            className="mx-auto grid max-w-full gap-2 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 focus:ring-offset-white/60 dark:focus:ring-offset-slate-900/60 rounded-2xl p-1"
-            style={{ gridTemplateColumns: `repeat(${cols}, 2.75rem)` }}
+            className="mx-auto grid max-w-full gap-3 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-offset-4 focus:ring-offset-white/80 dark:focus:ring-offset-slate-900/80 rounded-3xl p-2"
+            style={{ gridTemplateColumns: `repeat(${cols}, 3rem)` }}
             aria-label="GridSweep board"
             data-testid="game-board"
           >
@@ -775,11 +780,13 @@ export default function GridSweepApp() {
               ))
             )}
           </div>
-          <div className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
-            Left click: reveal • Right click: flag • Double‑click number: chord
-            • Arrows/WASD + Space/F/D
+          <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 font-medium">
+            🖱️ Left click: reveal • 🚩 Right click: flag • ⚡ Double‑click
+            number: chord
+            <br />
+            ⌨️ Arrows/WASD + Space/F/D
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <AnimatePresence>{settingsOpen && <SettingsDialog />}</AnimatePresence>
