@@ -1,0 +1,258 @@
+name: GridSweep CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run unit tests
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run E2E tests
+        run: npm run e2e
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  build-and-analyze:
+    name: Build & Analyze
+    runs-on: ubuntu-latest
+    needs: [quality-gates, e2e-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Analyze bundle size
+        run: npm run bundle-size
+
+      - name: Upload bundle analysis
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle-analysis
+          path: .next/analyze/
+          retention-days: 30
+
+  lighthouse:
+    name: Lighthouse Performance
+    runs-on: ubuntu-latest
+    needs: build-and-analyze
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm start &
+        env:
+          CI: true
+
+      - name: Wait for app to be ready
+        run: npx wait-on http://localhost:3000
+
+      - name: Run Lighthouse
+        run: npx lighthouse http://localhost:3000 --output=json --output-path=./lighthouse-report.json --chrome-flags="--headless --no-sandbox"
+
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-report
+          path: lighthouse-report.json
+          retention-days: 30
+
+      - name: Comment PR with Lighthouse results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const lighthouse = JSON.parse(fs.readFileSync('./lighthouse-report.json', 'utf8'));
+
+            const scores = lighthouse.categories;
+            const comment = `## 🚀 Lighthouse Performance Report
+
+            | Category | Score |
+            |----------|-------|
+            | Performance | ${Math.round(scores.performance.score * 100)} |
+            | Accessibility | ${Math.round(scores.accessibility.score * 100)} |
+            | Best Practices | ${Math.round(scores['best-practices'].score * 100)} |
+            | SEO | ${Math.round(scores.seo.score * 100)} |
+
+            **Overall Performance Grade: ${lighthouse.categories.performance.score >= 0.9 ? '🟢 Excellent' : lighthouse.categories.performance.score >= 0.8 ? '🟡 Good' : '🔴 Needs Improvement'}**
+
+            [View Full Report](${github.server_url}/${github.repository}/actions/runs/${github.run_id}/artifacts)`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: [quality-gates, e2e-tests, build-and-analyze]
+    if: github.event_name == 'pull_request'
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Vercel (Preview)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Preview Deployment Ready!**
+              
+              Your changes are now available at: ${{ steps.deploy.outputs.url }}
+              
+              This preview will be automatically updated with each new commit to this PR.`
+            });
+
+  deploy-production:
+    name: Deploy Production
+    runs-on: ubuntu-latest
+    needs: [quality-gates, e2e-tests, build-and-analyze, lighthouse]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Vercel (Production)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+      - name: Notify deployment success
+        run: |
+          echo "🚀 Production deployment successful!"
+          echo "URL: ${{ steps.deploy.outputs.url }}"
